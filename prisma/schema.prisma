@@ -1,0 +1,50 @@
+// This file defines the database schema for the ExamReady application using Prisma.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  password  String
+  name      String?
+  exams     Exam[]  @relation("UserExams")
+  subscriptions Subscription[] @relation("UserSubscriptions")
+  logs      AdminLog[] @relation("UserLogs")
+}
+
+model Exam {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  mcqs        MCQ[]   @relation("ExamMCQs")
+  userId      Int
+  user        User    @relation("UserExams", fields: [userId], references: [id])
+}
+
+model MCQ {
+  id          Int     @id @default(autoincrement())
+  question    String
+  options     String[]
+  answer      String
+  examId      Int
+  exam        Exam    @relation("ExamMCQs", fields: [examId], references: [id])
+}
+
+model Subscription {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  startDate DateTime @default(now())
+  endDate   DateTime
+  user      User    @relation("UserSubscriptions", fields: [userId], references: [id])
+}
+
+model AdminLog {
+  id        Int     @id @default(autoincrement())
+  action     String
+  timestamp  DateTime @default(now())
+  userId     Int
+  user       User    @relation("UserLogs", fields: [userId], references: [id])
+}
